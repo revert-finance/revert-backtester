@@ -2,6 +2,8 @@
 
 A fast backtester for Uniswap v3 positions.
 
+![scatterplot-full png](https://user-images.githubusercontent.com/21986/154587965-2ae05fc1-b562-4bf7-96d3-1b84f018d621.png)
+
 ## Using the backtester on a browser-connected REPL
 ```
 (def pool-address "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640")
