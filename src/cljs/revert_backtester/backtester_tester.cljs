@@ -43,165 +43,6 @@
         parsed)))
 
 
-(defn v3-token-hours-query-string
-  [token-address]
-  (str "{tokenHourDatas(orderBy: periodStartUnix,
-                   orderDirection: desc,
-                   where: {token:\"" token-address "\"}
-                   first: 1000) {
-    periodStartUnix,
-    token {id},
-    priceUSD
-      }}"))
-
-
-(defn v3-pool-hours-query-string
-  [pool-address token0-address token1-address]
-  (str "{
-      poolHourDatas(orderBy: periodStartUnix,
-                   orderDirection: desc,
-                   where: {pool: \"" pool-address "\"}
-                   first: 1000) {
-         id
-         periodStartUnix,
-         pool {id,
-         token0 {
-             id,
-            symbol,
-            name,
-            decimals
-
-         },
-         token1 {
-             id,
-            symbol,
-            name,
-            decimals
-         }
-         feeTier},
-         liquidity,
-         sqrtPrice,
-         token0Price,
-         token1Price,
-         tick,
-         tvlUSD,
-         volumeToken0,
-         volumeToken1
-         volumeUSD,
-         open,
-         high,
-         low,
-         close
-         txCount,
-         feeGrowthGlobal0X128,
-         feeGrowthGlobal1X128
-       }
-   }"))
-
-
-(defn get-univ3-subgraph-url [network]
-  (case network
-    "polygon" "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon"
-    "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-subgraph"))
-
-
-(defn <v3-token-hour-prices
-  "Gets hourly prices for `token0-address` and `token1-adddress`
-  in `network` ('mainnet', 'polygon') from the graph  and returns
-  a map with shape:
-  {token0-address {timestamp usd-price..,}
-   token1-address {timestamp usd-price..,}}"
-  [network token0-address token1-address]
-  (go
-    (let [data-token0
-          (:data (:body
-                  (<! (http/post
-                       (get-univ3-subgraph-url network)
-                       {:with-credentials? false
-                        :body (js/JSON.stringify
-                               (clj->js
-                                {:query
-                                 (v3-token-hours-query-string token0-address)}))}))))
-          data-token1
-          (:data (:body
-                  (<! (http/post
-                       (get-univ3-subgraph-url network)
-                       {:with-credentials? false
-                        :body (js/JSON.stringify
-                               (clj->js
-                                {:query
-                                 (v3-token-hours-query-string token1-address)}))}))))
-          token-prices (apply u/deep-merge
-                              (map (fn [x]
-                                     {(string/lower-case (:id (:token x)))
-                                      {(:periodStartUnix x) (:priceUSD x)}})
-                                   (concat (:tokenHourDatas data-token0)
-                                           (:tokenHourDatas data-token1))))]
-      token-prices)))
-
-
-(defn <v3-pool-hours
-  "For a Uniswap v3 `pool-address` and its underlying
-  assets `token0-address` and `token1-address` get
-  the hourly states for the pool for the latest 1000 hours."
-  [network pool-address token0-address token1-address
-   & {:keys [retries] :or {retries 3}}]
-  (go (let [pool-address (string/lower-case pool-address)
-            token0-address (string/lower-case token0-address)
-            token1-address (string/lower-case token1-address)
-            hour-data
-            (<! (http/post
-                 (get-univ3-subgraph-url network)
-                 {:with-credentials? false
-                  :body (js/JSON.stringify
-                         (clj->js {:query
-                                   (v3-pool-hours-query-string
-                                    pool-address token0-address token1-address)}))}))
-            pool-hours (:poolHourDatas (:data (:body hour-data)))
-            token-prices (<! (<v3-token-hour-prices network token0-address token1-address))]
-        (if (and (zero? (count pool-hours)) (> retries 0))
-          ;;thegraph can get unreliable
-          (do (js/console.log "Retrying graph dailys for:" pool-address)
-              (<! (<v3-pool-hours network pool-address token0-address token1-address :retries (dec retries))))
-          (map (fn [pool-hour]
-                 (let [date-ts (:periodStartUnix pool-hour)
-                       token0 (string/lower-case (:id (:token0 (:pool pool-hour))))
-                       token1 (string/lower-case (:id (:token1 (:pool pool-hour))))
-                       price0-usd (u/bn (get-in token-prices [token0 date-ts]))
-                       price1-usd (u/bn (get-in token-prices [token1 date-ts]))]
-                   {:network network
-                    :exchange "uniswapv3"
-                    :address (string/lower-case (:id (:pool pool-hour)))
-                    :fee-tier (:feeTier (:pool pool-hour))
-                    :date date-ts
-                    :timestamp (u/ts->datetime date-ts)
-                    :token0-decimals (u/str->int (:decimals (:token0 (:pool pool-hour))))
-                    :token0-symbol (:symbol (:token0 (:pool pool-hour)))
-                    :token0-address token0-address
-                    :token0-name (:name (:token0 (:pool pool-hour)))
-                    :token1-decimals (u/str->int (:decimals (:token1 (:pool pool-hour))))
-                    :token1-symbol (:symbol (:token1 (:pool pool-hour)))
-                    :token1-address token1-address
-                    :token1-name (:name (:token1 (:pool pool-hour)))
-                    :reserves-usd (u/bn (:tvlUSD pool-hour))
-                    :volume-usd (u/bn (:volumeUSD pool-hour))
-                    :volume0 (u/bn (:volumeToken0 pool-hour))
-                    :volume1 (u/bn (:volumeToken1 pool-hour))
-                    :fee-growth-global0 (u/bn (:feeGrowthGlobal0X128 pool-hour))
-                    :fee-growth-global1 (u/bn (:feeGrowthGlobal1X128 pool-hour))
-                    :open (u/bn (:open pool-hour))
-                    :high (u/bn (:high pool-hour))
-                    :low (u/bn (:low pool-hour))
-                    :close (u/bn (:close pool-hour))
-                    :liquidity (u/bn (:liquidity pool-hour))
-                    :token0-price (u/bn (:token0Price pool-hour))
-                    :token1-price (u/bn (:token1Price pool-hour))
-                    :token0-price-usd price0-usd
-                    :token1-price-usd price1-usd
-                    :sqrt-price (:sqrtPrice pool-hour)
-                    :tick (u/str->int (:tick pool-hour))}))
-               pool-hours)))))
-
 
 
 (defn fee-prediction-accuracy
@@ -257,31 +98,27 @@
   [position]
   (go
     (let [pool-ticks []
-          pool-hours
-          (<! (<v3-pool-hours
+          pool-periods
+          (<! (backtester/<historic-states
                "mainnet" (:pool position) (:token0 position) (:token1 position)))
-          pool-periods (filter #(and
-                                 (not (bn/= (:close %) (u/bn "0")))
-                                 (not (bn/= (:low %) (u/bn "0")))
-                                 (not (bn/= (:high %) (u/bn "0")))
-                                 (>= (:timestamp %)
-                                     (u/ts->datetime (:first-mint-ts position)))
-                                 (<= (:timestamp %)
-                                     (u/ts->datetime (:now-ts position)))
-                                 (not (nil? (:tick %))))
-                               (backtester/densify-results (reverse pool-hours)))
-          nil-prices? (has-nil-prices? pool-periods)
+          pool-periods' (filter #(and
+                                  (>= (:timestamp %)
+                                      (u/ts->datetime (:first-mint-ts position)))
+                                  (<= (:timestamp %)
+                                      (u/ts->datetime (:now-ts position))))
+                                pool-periods)
+          nil-prices? (has-nil-prices? pool-periods')
           backtest-options {:tick-lower (:tick-lower position)
                             :tick-upper (:tick-upper position)
                             :liquidity (:liquidity position)
-                            :first-ts (:timestamp (first pool-periods))
+                            :first-ts (:timestamp (first pool-periods'))
                             :dilute-fees? false
                             :reference-price :hodl}
           backtest-results (backtester/backtest-position
-                            pool-periods backtest-options pool-ticks)
+                            pool-periods' backtest-options pool-ticks)
           time-in-range (backtester/time-in-range backtest-results)
           position-active? (:position-active? (last backtest-results))
-          last-update (:timestamp (last pool-periods))]
+          last-update (:timestamp (last pool-periods'))]
       {:position position
        :num-results (count backtest-results)
        ;;:og-results backtest-results
