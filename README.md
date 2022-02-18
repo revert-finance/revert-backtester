@@ -16,11 +16,11 @@ A fast backtester for Uniswap v3 positions.
              
              
 (def backtest-options {:tick-lower 193380
-                         :tick-upper 200310
-                         :liquidity "326453009134297"
-                         :first-ts (:timestamp (first pool-periods))
-                         :dilute-fees? false
-                         :reference-price :hodl})
+                       :tick-upper 200310
+                       :liquidity "326453009134297"
+                       :first-ts (:timestamp (first pool-periods))
+                       :dilute-fees? false
+                       :reference-price :hodl})
                          
                          
                          
