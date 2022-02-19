@@ -325,8 +325,8 @@
 (defn dilution-factor
   "This returns the factor for which fee dilution would
    occur when adding the given amount of liquidity in the pool.
-  NOTE: This is just an approximation, as we are taking the current gross
-  liquidity instead of the gross liquidity at each historic state."
+  NOTE: This is just an approximation, as we are taking the current active
+  liquidity instead of the active liquidity at each historic state."
   [pool-ticks pool-state-prev position-liquidity]
   (let [tick-spacing (tick-spacing-by-fee (:fee-tier pool-state-prev))
         active-tickidx (str (floor-tick (:tick pool-state-prev)
@@ -334,13 +334,13 @@
         active-tick (first (filter #(= (str (:tickidx %))
                                        active-tickidx)
                                    pool-ticks))
-        ;; liquidity-gross is all the liquidity referencing
+        ;; liquidity-active is all the liquidity referencing
         ;; the tick in question. that is to say, it is all
         ;; the liquidity that would be awarded fees if
         ;; swaps happen in that tick.
-        gross-liquidity (:liquidity-gross active-tick)]
-    (bn// gross-liquidity
-          (bn/+ position-liquidity gross-liquidity))))
+        active-liquidity (:liquidity-active active-tick)]
+    (bn// active-liquidity
+          (bn/+ position-liquidity active-liquidity))))
 
 
 
