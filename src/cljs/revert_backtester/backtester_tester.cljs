@@ -267,8 +267,6 @@
 (defn render-accuracy-chart-
   [chart-shell tested-positions]
   (mount-view (filter #(and
-                        #_(not (contains? #{185013 185033 193511}
-                                        (:nft-id (:position %)))) ;; TODO attend outliers
                         (> (:num-results %) 48)
                         (not (:nil-prices? %))
                         ;; filter where latest date is recent

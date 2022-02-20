@@ -351,7 +351,7 @@
   [pool-state prev-pool-state pool-dilution]
   (let [fee-unbounded0 (bn/* pool-dilution
                              (bn/- (:fee-growth-global0 pool-state)
-                                    (:fee-growth-global0 prev-pool-state)))
+                                   (:fee-growth-global0 prev-pool-state)))
         fee-unbounded1 (bn/* pool-dilution
                              (bn/- (:fee-growth-global1 pool-state)
                                    (:fee-growth-global1 prev-pool-state)))]

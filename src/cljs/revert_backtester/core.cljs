@@ -16,7 +16,11 @@
 
 
 
-(defn <test-pos- [nft-id tracked-positions]
+(defn <test-pos-
+  "Takes an `nft-id` and a coll of `tracked-positions`
+  with the shape as those returned by
+  `backtester-tester/<fetch-testing-set`"
+  [nft-id tracked-positions]
   (go (backtester-tester/add-accuracy
        (<! (backtester-tester/<backtest-position
             (first (filter #(= (:nft-id %) nft-id)
@@ -74,17 +78,18 @@
 
 ;; test the first 100 positions of the testing set (this will take a minute)
 #_(go (def tested-positions100 (<! (backtester-tester/<backtest-positions-chunked
-                                    (take 100 tracked-positions) 20 println))))
+                                    (take 100 tracked-positions) 20 js/console.log))))
 
 
 ;; test the full testing set (this will take a few minutes)
 #_(go (def tested-positions (<! (backtester-tester/<backtest-positions-chunked
-                                 (identity tracked-positions) 20 println))))
+                                 (identity tracked-positions) 20 js/console.log))))
 
 
 ;; render accuarcy plot
-#_(render-accuracy-plot tested-positions100)
+#_(backtester-tester/render-accuracy-plot tested-positions100)
 
 ;; render accuracy histogram for position 100% time in range
-#_(render-accuracy-histogram (filter #(bn/= (:time-in-range (:results %)) 100)
-                                     tested-positions100))
+#_(backtester-tester/render-accuracy-histogram
+   (filter #(bn/= (:time-in-range (:results %)) 100)
+           tested-positions))
