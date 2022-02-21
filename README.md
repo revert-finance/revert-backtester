@@ -2,7 +2,6 @@
 
 A fast backtester for Uniswap v3 positions.
 
-![scatterplot-full png](https://user-images.githubusercontent.com/21986/154587965-2ae05fc1-b562-4bf7-96d3-1b84f018d621.png)
 
 ## Using the backtester on a browser-connected REPL
 ```clojure
@@ -68,11 +67,8 @@ Histogram of a subset from the above set that also match the following criteria:
 
 
 
-## Usage
 
-
-
-### for testing on a browser-connected repl
+## Replicating tests on a browser-connected repl
 
 
 ##### get the full testing set
