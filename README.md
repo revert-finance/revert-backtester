@@ -5,7 +5,7 @@ A fast backtester for Uniswap v3 positions.
 ![scatterplot-full png](https://user-images.githubusercontent.com/21986/154587965-2ae05fc1-b562-4bf7-96d3-1b84f018d621.png)
 
 ## Using the backtester on a browser-connected REPL
-```
+```clojure
 (def pool-address "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640")
 
 (def token0-address "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
@@ -76,32 +76,39 @@ Histogram of a subset from the above set that also match the following criteria:
 
 
 ##### get the full testing set
-`(go (def tracked-positions (<! (backtester-tester/<fetch-testing-set))))`
-
+```clojure
+(go (def tracked-positions (<! (backtester-tester/<fetch-testing-set))))`
+                                    (take 100 tracked-positions) 20 println))))
+```
 
 ##### backrtest a specific position
-`(go (def p0 (<! (<test-pos- 191651 tracked-positions))))`
-
+```clojure
+(go (def p0 (<! (<test-pos- 191651 tracked-positions))))`
+                                    (take 100 tracked-positions) 20 println))))
+```
 
 ##### test the first 100 positions of the testing set (this will take a minute)
-```
+```clojure
 (go (def tested-positions100 (<! (backtester-tester/<backtest-positions-chunked
                                     (take 100 tracked-positions) 20 println))))
 ```
 
 
 ##### test the full testing set (this will take a few minutes)
-```
+```clojure
 (go (def tested-positions (<! (backtester-tester/<backtest-positions-chunked
                                  (identity tracked-positions) 20 println))))
 ```
 
 
 ##### render accuarcy plot
-`(render-accuracy-plot tested-positions100)`
+```clojure
+(render-accuracy-plot tested-positions100)
+
+```
 
 ##### render accuracy histogram for position 100% time in range
-```
+```clojure
 (render-accuracy-histogram (filter #(bn/= (:time-in-range (:results %)) 100)
                                      tested-positions100))
 ```
