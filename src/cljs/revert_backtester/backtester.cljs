@@ -66,6 +66,7 @@
 (defn get-chain-id-for-network [network]
   (case network
     "polygon" 137
+    "optimism" 10
     1))
 
 
@@ -140,12 +141,11 @@
        }
    }"))
 
-
 (defn get-univ3-subgraph-url [network]
   (case network
+    "optimism" "https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis"
     "polygon" "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon"
     "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-subgraph"))
-
 
 (defn <v3-token-hour-prices
   "Gets hourly prices for `token0-address` and `token1-adddress`
