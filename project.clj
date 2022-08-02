@@ -1,4 +1,4 @@
-(defproject revert-backtester "0.0.1"
+(defproject org.revert/backtester "0.0.1"
   :description "A fast backtester for Uniswap v3 positions"
   :url "https://github.com/revert-finance/revert-backtester"
   :license {:name "MIT License"

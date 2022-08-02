@@ -18,7 +18,7 @@
     <url>https://github.com/revert-finance/revert-backtester</url>
     <connection>scm:git:git://github.com/revert-finance/revert-backtester.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/revert-finance/revert-backtester.git</developerConnection>
-    <tag>e040f7146b8fe5b1dc5098d8b80fb71478471498</tag>
+    <tag>f337b7e982469fc72cae3ea4cdb4a01ce3421e2a</tag>
   </scm>
   <build>
     <sourceDirectory>src/clj</sourceDirectory>
@@ -71,6 +71,16 @@
     <repository>
       <id>clojars</id>
       <url>https://repo.clojars.org/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>revert-github</id>
+      <url>https://maven.pkg.github.com/revert-finance</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
