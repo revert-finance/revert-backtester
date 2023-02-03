@@ -26,6 +26,11 @@
   :plugins [[cider/cider-nrepl "0.25.9"]
             [lein-shadow "0.3.1"]]
 
+  :repositories [["revert-backtester"
+                  {:url      "https://maven.pkg.github.com/revert-finance/revert-backtester"
+                   :username "private-user"
+                   :password :env/GITHUB_TOKEN}]]
+
 
   :shadow-cljs {:nrepl {:port 8778}
                 :builds {:app {:target :browser
