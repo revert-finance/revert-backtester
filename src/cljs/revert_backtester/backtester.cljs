@@ -67,6 +67,7 @@
   (case network
     "polygon" 137
     "optimism" 10
+    "arbitrum" 42161
     1))
 
 
@@ -91,7 +92,8 @@
   (str "{tokenHourDatas(orderBy: periodStartUnix,
                    orderDirection: desc,
                    where: {token:\"" token-address "\"}
-                   first: 1000) {
+                   first: 1000,
+                   subgraphError: allow) {
     periodStartUnix,
     token {id},
     priceUSD
@@ -104,7 +106,8 @@
       poolHourDatas(orderBy: periodStartUnix,
                    orderDirection: desc,
                    where: {pool: \"" pool-address "\"}
-                   first: 1000) {
+                   first: 1000,
+                   subgraphError: allow) {
          id
          periodStartUnix,
          pool {id,
@@ -144,6 +147,7 @@
 (defn get-univ3-subgraph-url [network]
   (case network
     "optimism" "https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis"
+    "arbitrum" "https://api.thegraph.com/subgraphs/name/kalinbas/univ3-arbi-full-test"
     "polygon" "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon"
     "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-subgraph"))
 
