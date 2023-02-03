@@ -1,4 +1,4 @@
-(defproject revert-backtester "0.0.1"
+(defproject org.revert/backtester "0.0.1"
   :description "A fast backtester for Uniswap v3 positions"
   :url "https://github.com/revert-finance/revert-backtester"
   :license {:name "MIT License"
@@ -25,6 +25,11 @@
 
   :plugins [[cider/cider-nrepl "0.25.9"]
             [lein-shadow "0.3.1"]]
+
+  :repositories [["revert-backtester"
+                  {:url      "https://maven.pkg.github.com/revert-finance/revert-backtester"
+                   :username "private-user"
+                   :password :env/GITHUB_TOKEN}]]
 
 
   :shadow-cljs {:nrepl {:port 8778}
